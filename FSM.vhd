@@ -1,0 +1,59 @@
+LIBRARY ieee;
+USE ieee.std_logic_all;
+
+ENTITY FSM IS
+    PORT(i_clk, i_reset:IN STD_LOGIC;
+    i_x:IN STD_LOGIC_VECTOR(1 downto 0);
+    i_MSTL, i_SSTL: OUT STD_LOGIC_VECTOR(2 downto 0));
+END FSM;
+
+ARCHITECTURE Moore OF FSM IS
+    TYPE state_type is (A, B, C, D);
+    SIGNAL presentState, nextState : state_type;
+BEGIN
+    PROCESS (presentState, i_x)
+    BEGIN
+        CASE presentState is
+            WHEN A=> IF i_x = "11" THEN
+                        nextState <= B;
+                      ELSE 
+                        nextState <= A;
+                      END IF;
+            WHEN B => IF i_x(0) = '1' THEN
+                        nextState <= C;
+                      ELSE
+                        nextState <= B;
+                      END IF;
+            WHEN C => IF i_x(0) = '1' THEN
+                        nextState <= D;
+                      ELSE
+                        nextState <= C;
+                      END IF;
+            WHEN D => IF i_x(0) = '1' THEN
+                        nextState <= A;
+                      ELSE
+                        nextState <= D;
+                      END IF;
+        END CASE;
+    END PROCESS;
+
+    PROCESS (i_clk, i_reset)
+    BEGIN
+        IF(i_reset = '1') THEN
+            presentState <= state_type'LEFT;
+        ELSE IF(i_clk'EVENT AND i_clk = '1') THEN
+            presentState <= nextState;
+        END IF;
+    END PROCESS;
+
+    PROCESS(presentState)
+    BEGIN
+        CASE presentState is
+            when A => i_MSTL <= "001" AND i_SSTL <="100";
+            when B => i_MSTL <= "010" AND i_SSTL <="100";
+            when C => i_MSTL <= "100" AND i_SSTL <="001";
+            when D => i_MSTL <= "100" AND i_SSTL <="010";
+        END CASE;
+    END PROCESS;
+END Moore;
+             

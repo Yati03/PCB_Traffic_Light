@@ -1,0 +1,22 @@
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+
+ENTITY fourbitselect IS
+	PORT(
+		MSTL, SSTL, SST, MST	: IN	STD_LOGIC_VECTOR(3 downto 0);
+		sel		: IN	STD_LOGIC_VECTOR(1 downto 0)
+        OUTPUT: OUT STD_LOGIC_VECTOR(3 downto 0));
+END fourbitselect;
+
+ARCHITECTURE behav OF fourbitselect is
+BEGIN
+IF sel=>"00" THEN
+    OUTPUT <=MSTL;
+ELSEIF sel => "01" THEN
+    OUTPUT <=MST;
+ELSEIF sel => "01" THEN
+    OUTPUT <=SSTL;
+ELSE
+    OUTPUT <=SST;
+END IF;
+END behav;

@@ -1,0 +1,55 @@
+LIBRARY ieee;
+USE ieee.std_logic_all;
+
+ENTITY Controlleur IS
+    PORT(i_clk, i_reset, i_rebond:IN STD_LOGIC;
+    i_x:IN STD_LOGIC_VECTOR(1 downto 0);
+    i_MSTL, i_SSTL: OUT STD_LOGIC_VECTOR(2 downto 0)
+    Select:OUT STD_LOGIC_VECTOR(1 downto 0));
+END Controlleur;
+
+ARCHITECTURE rtl OF threeBitAdder IS
+	SIGNAL stateY, nextStateY : STD_LOGIC_VECTOR(1 downto 0);
+
+	COMPONENT enARdFF_2 IS
+	PORT(
+		i_resetBar	: IN	STD_LOGIC;
+		i_d		: IN	STD_LOGIC;
+		i_enable	: IN	STD_LOGIC;
+		i_clock		: IN	STD_LOGIC;
+		o_q, o_qBar	: OUT	STD_LOGIC);
+    END COMPONENT;
+
+BEGIN
+    
+    -- Updating the state with D registers
+    y0:enARdFF_2
+        PORTMAP(i_resetBar=>i_reset;
+		i_d	=> (stateY(0) AND NOT(i_x(1))) OR (NOT(stateY(1)) AND stateY(0)) OR (i_x(0) AND i_x(1) AND NOT(stateY(1)));
+		i_enable=>i_rebond;
+		i_clock	=> i_clk;
+		o_q=>nextState(0));
+
+    y1:enARdFF_2
+        PORTMAP(i_resetBar=>i_reset;
+		i_d	=> (stateY(1) AND NOT(i_x(1))) OR (stateY(0) AND i_x(1)) OR (stateY(0) AND stateY(1));
+		i_enable=>i_rebond;
+		i_clock	=> i_clk;
+		o_q=>nextState(1));
+
+    -- Outputs
+        i_MSTL(0)<=NOT(stateY(1)) AND NOT(stateY(0));
+        i_MSTL(1)<=NOT(stateY(1)) AND stateY(0);
+        i_MSTL(2)<=stateY(1);
+
+        i_SSTL(0)<=stateY(1) AND stateY(0);
+        i_SSTL(1)<=NOT(stateY(0)) AND stateY(1);
+        i_SSTL(2)<=NOT(stateY(1));
+
+        Select(1)<=stateY(1) XOR state(0);
+        Select(0)<=stateY(1);
+    -- Update the state
+        nextState=>stateY;
+
+END rtl;
+
